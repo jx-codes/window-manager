@@ -277,12 +277,9 @@ export const Window: React.FC<WindowContainerProps<any>> = ({
     width: size.width,
     height: size.height,
     zIndex: window.zIndex,
-    backgroundColor: "#ffffff",
-    border: window.isFocused ? "2px solid #007acc" : "1px solid #ccc",
-    borderRadius: !isMaximized && !isFullscreen ? "8px" : "0",
+
     overflow: "hidden",
     cursor: isDragging ? "grabbing" : "default",
-    boxShadow: "0 10px 25px rgba(0, 0, 0, 0.2)",
     display: "flex",
     flexDirection: "column",
     ...style,
@@ -305,9 +302,9 @@ export const Window: React.FC<WindowContainerProps<any>> = ({
           customHeader !== null && (
             <div
               style={{
-                height: headerHeight,
                 cursor: draggable ? "grab" : "default",
                 userSelect: "none",
+                flexShrink: 0,
               }}
               onMouseDown={handleMouseDown}
             >
