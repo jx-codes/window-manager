@@ -1,6 +1,6 @@
 {
   "name": "@jx/react-window-manager",
-  "version": "1.0.9",
+  "version": "1.0.10",
   "description": "A window manager for React",
   "type": "module",
   "scripts": {
