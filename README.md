@@ -7,7 +7,7 @@ A powerful, type-safe React library for building desktop-style window management
 - **🖥️ Full Window Management**: Create, close, focus, move, resize, minimize, maximize, and fullscreen windows
 - **🎯 Type-Safe**: Built with TypeScript generics for complete type safety across window types
 - **⚡ Reactive State**: Powered by `@legendapp/state` for optimal performance and reactivity
-- **🎨 Customizable**: Fully customizable window components with flexible styling options
+- **🎨 Customizable**: Fully customizable window components with flexible styling options and custom headers
 - **🖱️ Interactive**: Built-in dragging, resizing, and focus management
 - **📱 Responsive**: Automatic container size management and window constraints
 - **🔧 Extensible**: Plugin-style window type registration system
@@ -187,6 +187,23 @@ Get the total number of open windows:
 const windowCount = useWindowCount<WindowTypes>();
 ```
 
+#### `useWindowManager()`
+
+Get the full window manager instance:
+
+```tsx
+const windowManager = useWindowManager<WindowTypes>();
+```
+
+#### `useWindowTypes()`
+
+Get window type registration functions:
+
+```tsx
+const { windowTypes, registerWindowType, unregisterWindowType } =
+  useWindowTypes<WindowTypes>();
+```
+
 ### Components
 
 #### `<WindowManagerProvider>`
@@ -215,12 +232,91 @@ Container component for individual windows with built-in dragging and resizing:
 <Window
   window={window}
   onClose={onClose}
-  showHeader={true}
   draggable={true}
   resizable={true}
+  headerHeight={30}
+  customHeader={customHeaderComponent}
 >
   {windowContent}
 </Window>
+```
+
+### Custom Headers
+
+The `Window` component supports fully customizable headers through the `customHeader` prop:
+
+#### No Header
+
+```tsx
+<Window window={window} customHeader={null}>
+  {/* Window content without header */}
+</Window>
+```
+
+#### Custom React Node Header
+
+```tsx
+<Window
+  window={window}
+  customHeader={
+    <div style={{ padding: "10px", background: "#f0f0f0" }}>
+      <span>My Custom Header</span>
+    </div>
+  }
+>
+  {windowContent}
+</Window>
+```
+
+#### Function-based Header with Window Data
+
+```tsx
+<Window
+  window={window}
+  customHeader={({ window, onClose, onMaximize, onMinimize, onFocus }) => (
+    <div
+      style={{
+        display: "flex",
+        justifyContent: "space-between",
+        alignItems: "center",
+        padding: "10px",
+        background: window.isFocused ? "#007acc" : "#f0f0f0",
+        color: window.isFocused ? "white" : "black",
+      }}
+    >
+      <span>{window.type}</span>
+      <div>
+        <button onClick={onMinimize}>−</button>
+        <button onClick={onMaximize}>□</button>
+        <button onClick={onClose}>×</button>
+      </div>
+    </div>
+  )}
+>
+  {windowContent}
+</Window>
+```
+
+#### Header Component Using Hooks
+
+You can also create header components that use the window manager hooks:
+
+```tsx
+const CustomHeaderComponent = () => {
+  const actions = useWindowActions<WindowTypes>();
+  const focusedWindow = useFocusedWindow<WindowTypes>();
+
+  return (
+    <div style={{ padding: "10px", background: "#f0f0f0" }}>
+      <span>Active: {focusedWindow?.type}</span>
+      <button onClick={() => actions.closeAll()}>Close All</button>
+    </div>
+  );
+};
+
+<Window window={window} customHeader={<CustomHeaderComponent />}>
+  {windowContent}
+</Window>;
 ```
 
 ### Window Actions
@@ -235,6 +331,7 @@ All window actions are available through the `useWindowActions` hook:
 - `minimize(id)` - Minimize a window
 - `maximize(id)` - Maximize a window
 - `fullscreen(id)` - Make a window fullscreen
+- `unfullscreen(id)` - Exit fullscreen mode
 - `closeAll()` - Close all windows
 - `closeByType(type)` - Close all windows of a specific type
 
@@ -251,15 +348,17 @@ const CustomWindow = ({ window, onClose, onMinimize, onMaximize }) => (
     onClose={onClose}
     className="custom-window"
     headerHeight={40}
-  >
-    <div className="window-header">
-      <h3>{window.props.title}</h3>
-      <div className="window-controls">
-        <button onClick={onMinimize}>−</button>
-        <button onClick={onMaximize}>□</button>
-        <button onClick={onClose}>×</button>
+    customHeader={({ window, onClose, onMinimize, onMaximize }) => (
+      <div className="custom-header">
+        <h3>{window.props.title}</h3>
+        <div className="window-controls">
+          <button onClick={onMinimize}>−</button>
+          <button onClick={onMaximize}>□</button>
+          <button onClick={onClose}>×</button>
+        </div>
       </div>
-    </div>
+    )}
+  >
     <div className="window-content">{/* Your window content */}</div>
   </Window>
 );
@@ -277,6 +376,25 @@ registerWindowType("new-type", NewWindowComponent);
 
 // Unregister a window type
 unregisterWindowType("old-type");
+```
+
+### Accessing Window Data in Components
+
+Use hooks to access window manager state in any component within the provider:
+
+```tsx
+const WindowStatusBar = () => {
+  const windows = useWindows<WindowTypes>();
+  const focusedWindow = useFocusedWindow<WindowTypes>();
+  const windowCount = useWindowCount<WindowTypes>();
+
+  return (
+    <div>
+      <span>Windows: {windowCount}</span>
+      <span>Focused: {focusedWindow?.type || "None"}</span>
+    </div>
+  );
+};
 ```
 
 ## Styling
@@ -308,6 +426,15 @@ The library provides minimal default styling. You can customize the appearance u
   background: #f5f5f5;
   border-bottom: 1px solid #e0e0e0;
   cursor: move;
+}
+
+.custom-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 12px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
 }
 ```
 

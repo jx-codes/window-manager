@@ -124,8 +124,24 @@ export type WindowContainerProps<WindowTypes extends string> = {
   className?: string;
   style?: React.CSSProperties;
   // Additional customization options
-  showHeader?: boolean;
   headerHeight?: number;
   draggable?: boolean;
   resizable?: boolean;
+  // Custom header component
+  customHeader?:
+    | React.ReactNode
+    | ((props: CustomHeaderProps<WindowTypes>) => React.ReactNode);
+};
+
+// === Custom Header Props ===
+export type CustomHeaderProps<WindowTypes extends string> = {
+  window: AppWindow<WindowTypes>;
+  onClose: () => void;
+  onFocus: () => void;
+  onMove: (position: { x: number; y: number }) => void;
+  onResize: (size: { width: number; height: number }) => void;
+  onMinimize: () => void;
+  onMaximize: () => void;
+  onFullscreen: () => void;
+  draggable?: boolean;
 };

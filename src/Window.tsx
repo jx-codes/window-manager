@@ -26,10 +26,10 @@ export const Window: React.FC<WindowContainerProps<any>> = ({
   children,
   className = "",
   style = {},
-  showHeader = true,
   headerHeight = 30,
   draggable = true,
   resizable = true,
+  customHeader,
 }) => {
   const [isDragging, setIsDragging] = useState(false);
   const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
@@ -301,7 +301,32 @@ export const Window: React.FC<WindowContainerProps<any>> = ({
         onMouseDown={handlers.onFocus}
       >
         {/* Window Header */}
-        {showHeader && (
+        {customHeader !== undefined ? (
+          customHeader !== null && (
+            <div
+              style={{
+                height: headerHeight,
+                cursor: draggable ? "grab" : "default",
+                userSelect: "none",
+              }}
+              onMouseDown={handleMouseDown}
+            >
+              {typeof customHeader === "function"
+                ? customHeader({
+                    window,
+                    onClose: handlers.onClose,
+                    onFocus: handlers.onFocus,
+                    onMove: handlers.onMove,
+                    onResize: handlers.onResize,
+                    onMinimize: handlers.onMinimize,
+                    onMaximize: handlers.onMaximize,
+                    onFullscreen: handlers.onFullscreen,
+                    draggable,
+                  })
+                : customHeader}
+            </div>
+          )
+        ) : (
           <div
             style={{
               height: headerHeight,
