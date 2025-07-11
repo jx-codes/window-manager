@@ -282,7 +282,7 @@ export const Window: React.FC<WindowContainerProps<any>> = ({
     top: position.y,
     width: size.width,
     height: size.height,
-    zIndex: window.zIndex,
+    zIndex: window.isPinned ? window.zIndex + 10000 : window.zIndex,
     border: window.isPinned ? "2px solid #ffd700" : "none",
     boxShadow: window.isPinned
       ? "0 0 10px rgba(255, 215, 0, 0.5), 0 4px 20px rgba(0, 0, 0, 0.3)"
