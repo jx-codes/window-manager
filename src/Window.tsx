@@ -23,6 +23,8 @@ export const Window: React.FC<WindowContainerProps<any>> = ({
   onMinimize,
   onMaximize,
   onFullscreen,
+  onPin,
+  onUnpin,
   children,
   className = "",
   style = {},
@@ -49,6 +51,8 @@ export const Window: React.FC<WindowContainerProps<any>> = ({
       onMinimize: () => windowManager.actions.minimize(window.id),
       onMaximize: () => windowManager.actions.maximize(window.id),
       onFullscreen: () => windowManager.actions.fullscreen(window.id),
+      onPin: () => windowManager.actions.pin(window.id),
+      onUnpin: () => windowManager.actions.unpin(window.id),
     }),
     [windowManager, window.id]
   );
@@ -62,6 +66,8 @@ export const Window: React.FC<WindowContainerProps<any>> = ({
     onMinimize: onMinimize || defaultHandlers.onMinimize,
     onMaximize: onMaximize || defaultHandlers.onMaximize,
     onFullscreen: onFullscreen || defaultHandlers.onFullscreen,
+    onPin: onPin || defaultHandlers.onPin,
+    onUnpin: onUnpin || defaultHandlers.onUnpin,
   };
 
   const isMaximized = window.state === "maximized";
@@ -277,7 +283,10 @@ export const Window: React.FC<WindowContainerProps<any>> = ({
     width: size.width,
     height: size.height,
     zIndex: window.zIndex,
-
+    border: window.isPinned ? "2px solid #ffd700" : "none",
+    boxShadow: window.isPinned
+      ? "0 0 10px rgba(255, 215, 0, 0.5), 0 4px 20px rgba(0, 0, 0, 0.3)"
+      : "0 4px 20px rgba(0, 0, 0, 0.1)",
     overflow: "hidden",
     cursor: isDragging ? "grabbing" : "default",
     display: "flex",
@@ -318,6 +327,8 @@ export const Window: React.FC<WindowContainerProps<any>> = ({
                     onMinimize: handlers.onMinimize,
                     onMaximize: handlers.onMaximize,
                     onFullscreen: handlers.onFullscreen,
+                    onPin: handlers.onPin,
+                    onUnpin: handlers.onUnpin,
                     draggable,
                   })
                 : customHeader}
@@ -327,22 +338,72 @@ export const Window: React.FC<WindowContainerProps<any>> = ({
           <div
             style={{
               height: headerHeight,
-              backgroundColor: window.isFocused ? "#007acc" : "#f0f0f0",
+              backgroundColor: window.isPinned
+                ? "#ffd700"
+                : window.isFocused
+                  ? "#007acc"
+                  : "#f0f0f0",
               cursor: draggable ? "grab" : "default",
               display: "flex",
               alignItems: "center",
               justifyContent: "space-between",
               padding: "0 12px",
-              color: window.isFocused ? "white" : "black",
+              color: window.isPinned
+                ? "#000"
+                : window.isFocused
+                  ? "white"
+                  : "black",
               borderBottom: "1px solid rgba(0, 0, 0, 0.1)",
               userSelect: "none",
             }}
             onMouseDown={handleMouseDown}
           >
-            <span style={{ fontSize: "14px", fontWeight: 500 }}>
-              {window.type}
-            </span>
+            <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+              {window.isPinned && (
+                <span style={{ fontSize: "12px", fontWeight: "bold" }}>📌</span>
+              )}
+              <span style={{ fontSize: "14px", fontWeight: 500 }}>
+                {window.type}
+              </span>
+            </div>
             <div style={{ display: "flex", gap: "6px" }}>
+              {/* Pin/Unpin button */}
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  if (window.isPinned) {
+                    handlers.onUnpin();
+                  } else {
+                    handlers.onPin();
+                  }
+                }}
+                style={{
+                  background: "none",
+                  border: "none",
+                  color: "inherit",
+                  cursor: "pointer",
+                  fontSize: "14px",
+                  padding: "4px 6px",
+                  borderRadius: "2px",
+                  width: "20px",
+                  height: "20px",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                }}
+                title={window.isPinned ? "Unpin from top" : "Pin to top"}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.backgroundColor = window.isPinned
+                    ? "rgba(0, 0, 0, 0.1)"
+                    : "rgba(255, 255, 255, 0.2)";
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.backgroundColor = "transparent";
+                }}
+              >
+                {window.isPinned ? "📌" : "📍"}
+              </button>
+
               {/* Minimize button */}
               <button
                 onClick={(e) => {
@@ -365,8 +426,9 @@ export const Window: React.FC<WindowContainerProps<any>> = ({
                 }}
                 title="Minimize"
                 onMouseEnter={(e) => {
-                  e.currentTarget.style.backgroundColor =
-                    "rgba(255, 255, 255, 0.2)";
+                  e.currentTarget.style.backgroundColor = window.isPinned
+                    ? "rgba(0, 0, 0, 0.1)"
+                    : "rgba(255, 255, 255, 0.2)";
                 }}
                 onMouseLeave={(e) => {
                   e.currentTarget.style.backgroundColor = "transparent";
@@ -401,8 +463,9 @@ export const Window: React.FC<WindowContainerProps<any>> = ({
                 }}
                 title={window.state === "maximized" ? "Restore" : "Maximize"}
                 onMouseEnter={(e) => {
-                  e.currentTarget.style.backgroundColor =
-                    "rgba(255, 255, 255, 0.2)";
+                  e.currentTarget.style.backgroundColor = window.isPinned
+                    ? "rgba(0, 0, 0, 0.1)"
+                    : "rgba(255, 255, 255, 0.2)";
                 }}
                 onMouseLeave={(e) => {
                   e.currentTarget.style.backgroundColor = "transparent";

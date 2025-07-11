@@ -11,6 +11,7 @@ export type AppWindow<WindowTypes extends string> = {
   state: "normal" | "maximized" | "minimized" | "fullscreen";
   zIndex: number;
   isFocused: boolean;
+  isPinned: boolean;
 };
 
 // === Window Component Props ===
@@ -23,6 +24,8 @@ export type WindowProps<WindowTypes extends string> = {
   onMinimize: () => void;
   onMaximize: () => void;
   onFullscreen: () => void;
+  onPin: () => void;
+  onUnpin: () => void;
 };
 
 // === Window Types Registry ===
@@ -57,6 +60,8 @@ export type AppWindowManagerActions<WindowTypes extends string> = {
   minimize: (id: string) => void;
   fullscreen: (id: string) => void;
   unfullscreen: (id: string) => void;
+  pin: (id: string) => void;
+  unpin: (id: string) => void;
   setContainerSize: (size: { width: number; height: number }) => void;
   // Window management utilities
   getWindow: (id: string) => AppWindow<WindowTypes> | undefined;
@@ -120,6 +125,8 @@ export type WindowContainerProps<WindowTypes extends string> = {
   onMinimize?: () => void;
   onMaximize?: () => void;
   onFullscreen?: () => void;
+  onPin?: () => void;
+  onUnpin?: () => void;
   children: React.ReactNode;
   className?: string;
   style?: React.CSSProperties;
@@ -143,5 +150,7 @@ export type CustomHeaderProps<WindowTypes extends string> = {
   onMinimize: () => void;
   onMaximize: () => void;
   onFullscreen: () => void;
+  onPin: () => void;
+  onUnpin: () => void;
   draggable?: boolean;
 };

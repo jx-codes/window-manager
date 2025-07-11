@@ -44,6 +44,7 @@ export const createWindowManagerStore = <
         state: "normal",
         zIndex: currentState.nextZIndex,
         isFocused: true,
+        isPinned: false,
       };
 
       // Update all windows to be unfocused, then add the new focused window
@@ -140,6 +141,52 @@ export const createWindowManagerStore = <
           window.id === id ? { ...window, state: "normal" as const } : window
         )
       );
+    },
+
+    pin: (id: string) => {
+      const currentState = state$.get();
+      const targetWindow = currentState.windows.find((w) => w.id === id);
+
+      if (!targetWindow || targetWindow.isPinned) return;
+
+      // Get the highest z-index among all windows
+      const highestZIndex = getHighestZIndex(currentState.windows);
+      const newZIndex = highestZIndex + 1000; // Add a large offset to ensure pinned windows stay on top
+
+      state$.windows.set(
+        currentState.windows.map((window) =>
+          window.id === id
+            ? { ...window, isPinned: true, zIndex: newZIndex }
+            : window
+        )
+      );
+
+      state$.nextZIndex.set(newZIndex + 1);
+    },
+
+    unpin: (id: string) => {
+      const currentState = state$.get();
+      const targetWindow = currentState.windows.find((w) => w.id === id);
+
+      if (!targetWindow || !targetWindow.isPinned) return;
+
+      // Get the highest z-index among non-pinned windows
+      const nonPinnedWindows = currentState.windows.filter(
+        (w) => w.id !== id && !w.isPinned
+      );
+      const highestNonPinnedZIndex =
+        nonPinnedWindows.length > 0 ? getHighestZIndex(nonPinnedWindows) : 0;
+      const newZIndex = highestNonPinnedZIndex + 1;
+
+      state$.windows.set(
+        currentState.windows.map((window) =>
+          window.id === id
+            ? { ...window, isPinned: false, zIndex: newZIndex }
+            : window
+        )
+      );
+
+      state$.nextZIndex.set(newZIndex + 1);
     },
 
     // === Utility Methods ===

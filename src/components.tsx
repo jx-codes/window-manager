@@ -141,6 +141,8 @@ export const WindowRenderer = <WindowTypes extends string>({
           onMinimize: () => actions.minimize(window.id),
           onMaximize: () => actions.maximize(window.id),
           onFullscreen: () => actions.fullscreen(window.id),
+          onPin: () => actions.pin(window.id),
+          onUnpin: () => actions.unpin(window.id),
         };
 
         return React.createElement(WindowComponent, {
